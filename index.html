@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Very Good Web Hosting Inc</title>
+
+    <link rel="stylesheet" href="98.css" />
+    <link rel="stylesheet" href="index.css" />
+
+    <script src="index.js"></script>
+</head>
+<body onload="onLoad()">
+
+<div id="container">
+    <div id="left" style="height: 100%">
+        <div id="control" class="window">
+            <div class="title-bar">
+                <div class="title-bar-text">Very Good Web Hosting Control Panel</div>
+                <div class="title-bar-controls"></div>
+            </div>
+            <div class="window-body">
+                <fieldset style="margin-top: 8px">
+                    <input type="checkbox" id="persist" onclick="event.preventDefault();">
+                    <label for="persist">super secret checkbox</label>
+                </fieldset>
+
+                <fieldset style="margin-top: 8px">
+                    <input type="file" id="file"><br><br>
+                    <button onclick="storeFile();">process file</button>
+                </fieldset>
+
+                <fieldset style="margin-top: 8px">
+                    <p>connection status:</p>
+                    <p id="status">disconnected</p>
+                    <p id="error"></p>
+                    <label>hostname:&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="hostname"></label><br><br>
+                    <button onclick="connect()">connect</button>
+                    <button onclick="disconnect()">disconnect</button>
+                </fieldset>
+
+                <fieldset style="margin-top: 8px">
+                    <p>Peers</p>
+                    <ul id="peer-list" class="tree-view"></ul>
+                    <br>
+
+                    <p>Files</p>
+                    <ul id="file-list" class="tree-view"></ul>
+                    <br>
+                    <button onclick="deleteFile()">delete</button>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="editor" class="window" style="margin-top: 8px" hidden>
+            <div class="title-bar">
+                <div class="title-bar-text">notepad.exe</div>
+                <div class="title-bar-controls"></div>
+            </div>
+            <div class="window-body">
+                <p>a</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="right" style="height: 100%">
+        <div id="browser" class="window" style="min-width: 125px; height: 100%;">
+            <div class="title-bar">
+                <div class="title-bar-text">Internet Explorer</div>
+                <div class="title-bar-controls"></div>
+            </div>
+            <div class="window-body" style="height: 100%;">
+                <div class="field-row">
+                    <label for="url">URL: </label>
+                    <input autocomplete="off" id="url" type="text" style="width: 100%;">
+                    <button style="float: right;" onclick="goUrl()">Go</button>
+                </div>
+                <br>
+                <iframe id="browser-frame" src="about:blank" style="width: 99.5%; height: 87%;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
