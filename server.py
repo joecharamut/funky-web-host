@@ -4,6 +4,7 @@ import websockets
 import asyncio
 import json
 import uuid
+import ssl
 
 
 class Client:
@@ -126,7 +127,9 @@ async def app(websocket: websockets.WebSocketServerProtocol, path: str) -> None:
 
 
 address = ("0.0.0.0", 8088)
-start_server = websockets.serve(app, address[0], address[1])
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain("fullchain.pem", "privkey.pem")
+start_server = websockets.serve(app, address[0], address[1], ssl=ssl_context)
 
 
 if __name__ == "__main__":

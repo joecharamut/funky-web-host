@@ -96,7 +96,7 @@ function connect() {
         window.socket.close(1000);
         window.socket = null;
     }
-    window.socket = new WebSocket("ws://localhost:8088");
+    window.socket = new WebSocket("wss://lab.spaghetti.rocks:8088");
     window.socket.onmessage = onMessage;
     window.socket.onopen = onOpen;
     window.socket.onclose = onClose;
