@@ -45,10 +45,19 @@ async def register(websocket: websockets.WebSocketServerProtocol) -> Client:
 
 
 async def unregister(websocket: websockets.WebSocketServerProtocol) -> None:
+    client = None
     for client in clients:
         if client.socket.remote_address == websocket.remote_address:
             clients.remove(client)
             break
+    for id, tun in tunnels.items():
+        if tun.a == client:
+            await tun.b.send({"action": "tunnel_close"})
+        if tun.b == client:
+            await tun.a.send({"action": "tunnel_close"})
+        del tunnels[id]
+    for c in clients:
+        await do_sync_client(c)
 
 
 async def do_sync_client(client: Client, name: Optional[str] = None) -> None:

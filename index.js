@@ -180,7 +180,7 @@ function onMessage(event) {
         case "tunnel_reject": {
             window.tunnel = null;
             window.tunnel_after_connect = null;
-            setFrame(`<!DOCTYPE html><html><body bgcolor="white">
+            setFrame(`<!DOCTYPE html><html><body>
                       <h1>503 Service Unavailable</h1>
                       <p>Peer refused connection: ${message.message}</p>
                       </body></html>`);
@@ -194,7 +194,7 @@ function onMessage(event) {
         case "tunnel_not_found": {
             window.tunnel = null;
             window.tunnel_after_connect = null;
-            setFrame(`<!DOCTYPE html><html><body bgcolor="white">
+            setFrame(`<!DOCTYPE html><html><body>
                       <h1>404 Not Found</h1>
                       <p></p>
                       </body></html>`);
@@ -213,13 +213,27 @@ function onMessage(event) {
                             "content": makeFileList()
                         }));
                     } else if (isFile(message.path)) {
-                        window.socket.send(JSON.stringify({
-                            "action": "tunnel_data",
-                            "tunnel_action": "response",
-                            "id": window.tunnel,
-                            "content_type": "application/octet-stream",
-                            "content": getFile(message.path)
-                        }));
+                        let content = getFile(message.path);
+                        let header = content.split(",")[0];
+                        let contentType = header.substr(5).split(";")[0];
+                        if (contentType === "text/html") {
+                            console.log();
+                            window.socket.send(JSON.stringify({
+                                "action": "tunnel_data",
+                                "tunnel_action": "response",
+                                "id": window.tunnel,
+                                "content_type": "text/html",
+                                "content": atob(content.split(",")[1])
+                            }));
+                        } else {
+                            window.socket.send(JSON.stringify({
+                                "action": "tunnel_data",
+                                "tunnel_action": "response",
+                                "id": window.tunnel,
+                                "content_type": "application/octet-stream",
+                                "content": getFile(message.path)
+                            }));
+                        }
                     }
                 } break;
 
@@ -273,7 +287,7 @@ function makeFileList() {
 
     return `<!DOCTYPE html>
 <html>
-<body bgcolor="white">
+<body>
 <h1>Index of /</h1><br>
 <table>
 <tbody>
@@ -284,22 +298,10 @@ ${fileList}
 </tbody>
 </table>
 <address>
-todo: server address
+Someone's Browser at vgwp://${window.id} Port something or other
 </address>
 </body>
 </html>`;
-}
-
-function test() {
-    setFrame(`
-<!DOCTYPE html>
-<html>
-<body bgcolor="white">
-<a href="/niko_roomba.png">abspath</a>
-<a href="vgwp://${window.id}/niko_roomba.png">withdomain</a>
-</body>
-</html>
-`);
 }
 
 function setFrame(content) {
@@ -333,7 +335,7 @@ function setFrame(content) {
 function requestPage(url) {
     let parts = /vgwp:\/\/([^\/]+)(\/(.*))?/.exec(url);
     if (!parts || !parts[1]) {
-        setFrame(`<!DOCTYPE html><html><body bgcolor="white">
+        setFrame(`<!DOCTYPE html><html><body>
                   <h1>400 Bad Request</h1>
                   <p>The request URI is invalid</p>
                   </body></html>`);
