@@ -37,8 +37,8 @@ function storeFile() {
     let f = $("#file").files[0];
     getBase64(f, function(content) {
         let bytes = (content.replace("=", "").length * 6) / 8;
-        if (bytes > 1.44 * 1000 * 1000) {
-            alert("files over 1.44mb are prohibited");
+        if (bytes > 0.5 * 1000 * 1000) {
+            alert("files over 500kb are prohibited");
             return;
         }
 
