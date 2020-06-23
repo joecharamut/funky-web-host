@@ -115,7 +115,15 @@ async def app(websocket: websockets.WebSocketServerProtocol, path: str) -> None:
                         await tunnels[id].a.send({"action": "tunnel_reject"})
                         del tunnels[id]
             elif action == "close_tunnel":
-                ...
+                if "id" in data.keys():
+                    id = data["id"]
+                    if id in tunnels:
+                        tun = tunnels[id]
+                        if tun.a:
+                            await tun.a.send({"action": "tunnel_close"})
+                        if tun.b:
+                            await tun.b.send({"action": "tunnel_close"})
+                        del tunnels[id]
             elif action == "tunnel_data":
                 if "id" in data.keys():
                     id = data["id"]

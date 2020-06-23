@@ -36,6 +36,12 @@ function getHostname() {
 function storeFile() {
     let f = $("#file").files[0];
     getBase64(f, function(content) {
+        let bytes = (content.replace("=", "").length * 6) / 8;
+        if (bytes > 1.44 * 1000 * 1000) {
+            alert("files over 1.44mb are prohibited");
+            return;
+        }
+
         let files = getFiles();
         files[f.name] = content;
 
@@ -148,12 +154,19 @@ function onMessage(event) {
         } break;
 
         case "tunnel_request": {
-            window.tunnel = message.id;
-            window.socket.send(JSON.stringify({
-                "action": "accept_tunnel",
-                // "action": "reject_tunnel",
-                "id": message.id
-            }));
+            if (!window.tunnel) {
+                window.tunnel = message.id;
+                window.socket.send(JSON.stringify({
+                    "action": "accept_tunnel",
+                    "id": message.id
+                }));
+            } else {
+                window.socket.send(JSON.stringify({
+                    "action": "reject_tunnel",
+                    "id": message.id,
+                    "message": "Host is Busy"
+                }));
+            }
         } break;
 
         case "tunnel_success": {
@@ -169,8 +182,13 @@ function onMessage(event) {
             window.tunnel_after_connect = null;
             setFrame(`<!DOCTYPE html><html><body bgcolor="white">
                       <h1>503 Service Unavailable</h1>
-                      <p>Peer refused connection</p>
+                      <p>Peer refused connection: ${message.message}</p>
                       </body></html>`);
+        } break;
+
+        case "tunnel_close": {
+            window.tunnel = null;
+            window.tunnel_after_connect = null;
         } break;
 
         case "tunnel_not_found": {
@@ -211,6 +229,10 @@ function onMessage(event) {
                     } else {
                         setFrame(`<object data="${message.content}"></object>`);
                     }
+                    window.socket.send(JSON.stringify({
+                        "action": "close_tunnel",
+                        "id": message.id
+                    }));
                 } break;
             }
         } break;
