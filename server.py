@@ -53,9 +53,12 @@ async def unregister(websocket: websockets.WebSocketServerProtocol) -> None:
     for id, tun in tunnels.items():
         if tun.a == client:
             await tun.b.send({"action": "tunnel_close"})
+            del tunnels[id]
+            break
         if tun.b == client:
             await tun.a.send({"action": "tunnel_close"})
-        del tunnels[id]
+            del tunnels[id]
+            break
     for c in clients:
         await do_sync_client(c)
 
@@ -82,7 +85,7 @@ async def app(websocket: websockets.WebSocketServerProtocol, path: str) -> None:
             if "action" not in data:
                 continue
 
-            print(data)
+            # print(data)
 
             action = data["action"]
             if action == "connect":
@@ -146,7 +149,7 @@ async def app(websocket: websockets.WebSocketServerProtocol, path: str) -> None:
 address = ("0.0.0.0", 8088)
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain("fullchain.pem", "privkey.pem")
-start_server = websockets.serve(app, address[0], address[1], ssl=ssl_context)
+start_server = websockets.serve(app, address[0], address[1], ssl=ssl_context, max_size=10485760)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ window.tunnel = null;
 window.tunnel_after_connect = null;
 
 const $ = document.querySelector.bind(document);
+let fileStore = "";
 
 function onLoad() {
     refreshFiles();
@@ -37,8 +38,8 @@ function storeFile() {
     let f = $("#file").files[0];
     getBase64(f, function(content) {
         let bytes = (content.replace("=", "").length * 6) / 8;
-        if (bytes > 0.5 * 1000 * 1000) {
-            alert("files over 500kb are prohibited");
+        if (getFileSize() + bytes > 10 * 1000 * 1000) {
+            alert("storage limit is 10mb");
             return;
         }
 
@@ -75,6 +76,24 @@ function refreshFiles() {
     for (let i = 0; i < files.length; i++) {
         list.innerHTML += `<li style="cursor: pointer" onclick="setSelectedFile(${i})">${files[i]}</li>`;
     }
+
+    let storage = $("#storage");
+    let storageText = $("#storage-text");
+    let fileSize = getFileSize();
+    let megabytes = (fileSize / (1000 * 1000));
+    storageText.innerHTML = Math.round(megabytes * 100) / 100 + "MB";
+    storage.value = (megabytes / 10) * 100;
+}
+
+function getFileSize() {
+    let fileSize = 0;
+    let fileStrings = Object.values(getFiles());
+    for (let i = 0; i < fileStrings.length; i++) {
+        let str = fileStrings[i];
+        let bytes = str.split(",")[1].replace("=", "").length * 6 / 8;
+        fileSize += bytes;
+    }
+    return fileSize;
 }
 
 function highlightTreeItem(list, index) {
@@ -103,13 +122,14 @@ function connect() {
         window.socket = null;
     }
     window.socket = new WebSocket("wss://lab.spaghetti.rocks:8088");
+    onStateChange();
     window.socket.onmessage = onMessage;
     window.socket.onopen = onOpen;
     window.socket.onclose = onClose;
     window.socket.onerror = onClose;
 }
 
-function onStateChange(event) {
+function onStateChange() {
     $("#status").innerHTML = ((state) => {
         switch (state) {
             case WebSocket.CLOSED:
@@ -125,7 +145,7 @@ function onStateChange(event) {
 }
 
 function onClose(event) {
-    onStateChange(event);
+    onStateChange();
     console.log(event);
     let message = event.reason ? event.reason : "No Reason";
     $("#error").innerHTML = `${event.code} (${message})`;
@@ -133,7 +153,7 @@ function onClose(event) {
 }
 
 function onOpen(event) {
-    onStateChange(event);
+    onStateChange();
     $("#error").innerHTML = "";
     window.id = getHostname();
     window.socket.send(JSON.stringify({"action":"connect", "name":window.id}));
@@ -256,7 +276,8 @@ function onMessage(event) {
 }
 
 function setFiles(files) {
-    window.sessionStorage.setItem("files", JSON.stringify(files));
+    // window.sessionStorage.setItem("files", JSON.stringify(files)); // RIP (5M char limit)
+    fileStore = JSON.stringify(files);
 }
 
 function isFile(path) {
@@ -268,7 +289,8 @@ function getFile(path) {
 }
 
 function getFiles() {
-    let files = window.sessionStorage.getItem("files");
+    // let files = window.sessionStorage.getItem("files"); // RIP (5M char limit)
+    let files = fileStore;
     if (files) {
         files = JSON.parse(files);
     } else {
@@ -298,7 +320,7 @@ ${fileList}
 </tbody>
 </table>
 <address>
-Someone's Browser at vgwp://${window.id} Port something or other
+Someone's Browser at vgwp://${window.id}
 </address>
 </body>
 </html>`;
