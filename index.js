@@ -455,6 +455,7 @@ function handleAboutPage(pageId) {
                         kind of<br><br>
                         All your files are stored in javascript so if you refresh or close the tab its all gone<br>
                         Also for uploaded html pages only &lt;a&gt; tags and &lt;img&gt; tags work with cool:// urls<br>
+                        Oh and the back and forward buttons dont work for the url bar yet<br>
                         </p>
                         <h3>Technical Info:</h3>
                         <p>
