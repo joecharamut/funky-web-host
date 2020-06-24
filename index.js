@@ -440,6 +440,14 @@ function handleAboutPage(pageId) {
             case "blank": {
                 return `<!DOCTYPE html><html><body>
                         <h1>Web Host Experiment Thing</h1>
+                        <h3>Requirements:</h3>
+                        <p>
+                        <ul>
+                            <li>Minimum screen resolution of 800x600</li>
+                            <li><a href="https://caniuse.com/#feat=websockets">Browser that supports websockets</a></li>
+                            <li>Preferably not a mobile device</li>
+                        </ul>
+                        </p>
                         <h3>How to use:</h3>
                         <p>
                         (very experimental so far)<br>
