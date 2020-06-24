@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Very Good Web Hosting Inc</title>
 
-    <link rel="stylesheet" href="98.css" />
+    <link rel="stylesheet" href="css/98.css" />
+    <link rel="stylesheet" href="css/font-awesome.css" />
     <link rel="stylesheet" href="index.css" />
 
     <script src="index.js"></script>
@@ -74,9 +75,9 @@
             </div>
             <div class="window-body" style="height: 100%;">
                 <div class="field-row">
-                    <label for="url">URL: </label>
-                    <input autocomplete="off" id="url" type="text" style="width: 100%;">
-                    <button style="float: right;" onclick="goUrl()">Go</button>
+                    <button onclick="goUrl()">Refresh</button>
+                    <input autocomplete="off" id="url" type="text" style="width: 100%;"
+                           onkeyup="if (event.key === 'Enter') goUrl();">
                 </div>
                 <br>
                 <iframe id="browser-frame" src="about:blank"></iframe>
