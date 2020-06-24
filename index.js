@@ -6,6 +6,7 @@ window.tunnel_after_connect = null;
 const $ = document.querySelector.bind(document);
 let fileStore = "";
 let requestCallbacks = {};
+let closeTimeout = null;
 
 function onLoad() {
     refreshFiles();
@@ -304,12 +305,19 @@ function onMessage(event) {
                     } else {
                         if (requestCallbacks[message.requestFor]) {
                             requestCallbacks[message.requestFor](message.content, message.statusCode);
+                            delete requestCallbacks[message.requestFor];
                         }
                     }
-                    window.socket.send(JSON.stringify({
-                        "action": "close_tunnel",
-                        "id": message.id
-                    }));
+
+                    clearTimeout(closeTimeout);
+                    closeTimeout = setTimeout((function(tunnelId) {
+                        return function () {
+                            window.socket.send(JSON.stringify({
+                                "action": "close_tunnel",
+                                "id": tunnelId
+                            }));
+                        }
+                    })(message.id), 1000);
                 } break;
             }
         } break;
@@ -404,7 +412,6 @@ function setFrame(content) {
         for (let i = 0; i < imgs.length; i++) {
             let img = imgs[i];
             let src = img.src;
-            console.log(img);
             let matches = urlRegex.exec(src);
             if (matches) {
                 if (matches[2]) {
