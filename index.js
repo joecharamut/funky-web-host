@@ -5,6 +5,7 @@ window.tunnel_after_connect = null;
 
 const $ = document.querySelector.bind(document);
 let fileStore = "";
+let requestCallbacks = {};
 
 function onLoad() {
     refreshFiles();
@@ -13,6 +14,12 @@ function onLoad() {
     if (!host.value) {
         host.value = getHostname();
     }
+}
+
+function uuidv4() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
 }
 
 function getBase64(file, callback) {
@@ -37,7 +44,7 @@ function getHostname() {
 function storeFile() {
     let f = $("#file").files[0];
     getBase64(f, function(content) {
-        let bytes = (content.replace("=", "").length * 6) / 8;
+        let bytes = (content.length * 6) / 8;
         if (getFileSize() + bytes > 10 * 1000 * 1000) {
             alert("storage limit is 10mb");
             return;
@@ -85,15 +92,21 @@ function refreshFiles() {
     storage.value = (megabytes / 10) * 100;
 }
 
-function getFileSize() {
-    let fileSize = 0;
-    let fileStrings = Object.values(getFiles());
-    for (let i = 0; i < fileStrings.length; i++) {
-        let str = fileStrings[i];
-        let bytes = str.split(",")[1].replace("=", "").length * 6 / 8;
-        fileSize += bytes;
+function getFileSize(file = "") {
+    if (!file) {
+        let fileSize = 0;
+        let fileStrings = Object.values(getFiles());
+        for (let i = 0; i < fileStrings.length; i++) {
+            let str = fileStrings[i];
+            let bytes = str.split(",")[1].length * 6 / 8;
+            fileSize += bytes;
+        }
+        return fileSize;
+    } else {
+        let fileString = getFile(file);
+        let bytes = fileString.split(",")[1].length * 6 / 8;
+        return bytes;
     }
-    return fileSize;
 }
 
 function highlightTreeItem(list, index) {
@@ -230,7 +243,8 @@ function onMessage(event) {
                             "tunnel_action": "response",
                             "id": window.tunnel,
                             "content_type": "text/html",
-                            "content": makeFileList()
+                            "content": makeFileList(),
+                            "requestFor": message.requestFor
                         }));
                     } else if (isFile(message.path)) {
                         let content = getFile(message.path);
@@ -243,7 +257,9 @@ function onMessage(event) {
                                 "tunnel_action": "response",
                                 "id": window.tunnel,
                                 "content_type": "text/html",
-                                "content": atob(content.split(",")[1])
+                                "content": atob(content.split(",")[1]),
+                                "requestFor": message.requestFor,
+                                "statusCode": 200
                             }));
                         } else {
                             window.socket.send(JSON.stringify({
@@ -251,17 +267,38 @@ function onMessage(event) {
                                 "tunnel_action": "response",
                                 "id": window.tunnel,
                                 "content_type": "application/octet-stream",
-                                "content": getFile(message.path)
+                                "content": getFile(message.path),
+                                "requestFor": message.requestFor,
+                                "statusCode": 200
                             }));
                         }
+                    } else {
+                        window.socket.send(JSON.stringify({
+                            "action": "tunnel_data",
+                            "tunnel_action": "response",
+                            "id": window.tunnel,
+                            "content_type": "text/html",
+                            "content": `<!DOCTYPE html><html><body>
+                                        <h1>404 Not Found</h1>
+                                        <p></p>
+                                        </body></html>`,
+                            "requestFor": message.requestFor,
+                            "statusCode": 404
+                        }));
                     }
                 } break;
 
                 case "response": {
-                    if (message.content_type === "text/html") {
-                        setFrame(message.content);
+                    if (!message.requestFor) {
+                        if (message.content_type === "text/html") {
+                            setFrame(message.content);
+                        } else {
+                            setFrame(`<object data="${message.content}"></object>`);
+                        }
                     } else {
-                        setFrame(`<object data="${message.content}"></object>`);
+                        if (requestCallbacks[message.requestFor]) {
+                            requestCallbacks[message.requestFor](message.content, message.statusCode);
+                        }
                     }
                     window.socket.send(JSON.stringify({
                         "action": "close_tunnel",
@@ -304,19 +341,22 @@ function makeFileList() {
     let fileList = "";
     for (var i = 0; i < files.length; i++) {
         let file = files[i];
-        fileList += `<tr><td><a href="/${file}">/${file}</a></td></tr>`;
+        fileList += `<tr>
+                     <td><a href="/${file}">${file}</a></td>
+                     <td style="text-align: right">${Math.round(getFileSize(file) / 1000 * 10) / 10}K</td>
+                     </tr>`;
     }
 
     return `<!DOCTYPE html>
 <html>
 <body>
 <h1>Index of /</h1><br>
-<table>
+<table style="font-family: monospace">
 <tbody>
-<tr><th>Name</th></tr>
-<tr><th colspan="1"><hr></th></tr>
+<tr><th>Name</th><th>Size</th></tr>
+<tr><th colspan="2"><hr></th></tr>
 ${fileList}
-<tr><th colspan="1"><hr></th></tr>
+<tr><th colspan="2"><hr></th></tr>
 </tbody>
 </table>
 <address>
@@ -333,6 +373,7 @@ function setFrame(content) {
     frame.onload = function() {
         let urlRegex = /(^vgwp:\/\/.+$)|(^[^:]+$)/;
 
+        // fix <a> tags
         let links = frame.contentDocument.getElementsByTagName("a");
         for (let i = 0; i < links.length; i++) {
             let a = links[i];
@@ -351,10 +392,36 @@ function setFrame(content) {
                 })(href);
             }
         }
+
+        // fix <img> tags
+        let imgs = frame.contentDocument.getElementsByTagName("img");
+        for (let i = 0; i < imgs.length; i++) {
+            let img = imgs[i];
+            let src = img.src;
+            console.log(img);
+            let matches = urlRegex.exec(src);
+            if (matches) {
+                if (matches[2]) {
+                    src = resolveUrl(matches[2]);
+                }
+                img.src = "";
+                let requestId = uuidv4();
+                requestCallbacks[requestId] = (function(element) {
+                    return function(content, statusCode) {
+                        if (statusCode === 200) {
+                            element.src = content;
+                        } else {
+                            element.src = "";
+                        }
+                    }
+                })(img);
+                requestPage(src, requestId);
+            }
+        }
     }
 }
 
-function requestPage(url) {
+function requestPage(url, requestFor = "") {
     let parts = /vgwp:\/\/([^\/]+)(\/(.*))?/.exec(url);
     if (!parts || !parts[1]) {
         setFrame(`<!DOCTYPE html><html><body>
@@ -375,7 +442,8 @@ function requestPage(url) {
             "action": "tunnel_data",
             "tunnel_action": "request",
             "id": window.tunnel,
-            "path": parts[2] ? parts[2] : "/index"
+            "path": parts[2] ? parts[2] : "/index",
+            "requestFor": requestFor
         }));
     }
 
