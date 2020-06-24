@@ -444,7 +444,7 @@ function handleAboutPage(pageId) {
                         <p>
                         <ul>
                             <li>Minimum screen resolution of 800x600</li>
-                            <li><a href="https://caniuse.com/#feat=websockets">Browser that supports websockets</a></li>
+                            <li>Some modern browser</li>
                             <li>Preferably not a mobile device</li>
                         </ul>
                         </p>
