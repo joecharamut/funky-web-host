@@ -14,6 +14,7 @@ function onLoad() {
     if (!host.value) {
         host.value = getHostname();
     }
+    goUrl();
 }
 
 function uuidv4() {
@@ -132,7 +133,6 @@ function setSelectedPeer(index) {
 function connect() {
     if (window.socket) {
         window.socket.close(1000);
-        window.socket = null;
     }
     window.socket = new WebSocket("wss://lab.spaghetti.rocks:8088");
     onStateChange();
@@ -140,6 +140,12 @@ function connect() {
     window.socket.onopen = onOpen;
     window.socket.onclose = onClose;
     window.socket.onerror = onClose;
+}
+
+function disconnect() {
+    if (window.socket) {
+        window.socket.close(1000);
+    }
 }
 
 function onStateChange() {
@@ -421,7 +427,54 @@ function setFrame(content) {
     }
 }
 
+function handleAboutPage(pageId) {
+    setFrame((function() {
+        switch (pageId) {
+            case "blank": {
+                return `<!DOCTYPE html><html><body>
+                        <h1>Web Host Experiment Thing</h1>
+                        <h3>How to use:</h3>
+                        <p>
+                        (very experimental so far)<br>
+                        Set a hostname on the sidebar<br>
+                        Select some files if you want (you can do this later)<br>
+                        Click connect to connect to the network and share your files<br>
+                        </p>
+                        <h3>General Info:</h3>
+                        <p>
+                        So basically you can host files from your browser as sort of a server<br>
+                        but it connects to a central server to pass the stuff from browser to browser<br>
+                        I mean its pretty much p2p web hosting<br><br>
+                        kind of<br><br>
+                        All your files are stored in javascript so if you refresh or close the tab its all gone<br>
+                        </p>
+                        <h3>Technical Info:</h3>
+                        <p>
+                        It's almost all in the browser with normal javascript<br>
+                        Other than the server, which is written in python<br>
+                        The 10MB limit is just for fun<br>
+                        Although if you do go over it the server kills your connection<br><br>
+                        <a href="https://www.example.com">sauce code</a>
+                        </p>
+                        </body></html>`;
+            } break;
+
+            default: {
+                return `<!DOCTYPE html><html><body>
+                        <h1>404 Not Found</h1>
+                        <p></p>
+                        </body></html>`
+            } break;
+        }
+    })());
+}
+
 function requestPage(url, requestFor = "") {
+    if (url.startsWith("about:")) {
+        handleAboutPage(url.split(":")[1]);
+        return;
+    }
+
     let parts = /vgwp:\/\/([^\/]+)(\/(.*))?/.exec(url);
     if (!parts || !parts[1]) {
         setFrame(`<!DOCTYPE html><html><body>

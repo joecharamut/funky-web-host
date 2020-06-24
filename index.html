@@ -16,22 +16,23 @@
     <div id="left" style="height: 100%">
         <div id="control" class="window">
             <div class="title-bar">
-                <div class="title-bar-text">Very Good Web Hosting Control Panel</div>
+                <div class="title-bar-text">Very Good Web Host Control Panel</div>
                 <div class="title-bar-controls"></div>
             </div>
             <div class="window-body">
                 <fieldset style="margin-top: 8px">
                     <input type="checkbox" id="persist" onclick="event.preventDefault();">
                     <label for="persist">super secret checkbox</label>
-                    <br><br>
-                    <label for="storage">Storage Use:</label>
-                    <progress id="storage" max="100" value="0"></progress>
-                    <span><span id="storage-text">0.0MB</span>/10MB</span>
                 </fieldset>
 
                 <fieldset style="margin-top: 8px">
-                    <input type="file" id="file"><br><br>
-                    <button onclick="storeFile();">process file</button>
+                    <label for="storage">Storage Use:</label>
+                    <progress id="storage" max="100" value="0"></progress>
+                    <span><span id="storage-text">0.0MB</span>/10MB</span>
+                    <br><br>
+                    <input type="file" id="file">
+                    <br><br>
+                    <button onclick="storeFile();">upload</button>
                 </fieldset>
 
                 <fieldset style="margin-top: 8px">
@@ -70,14 +71,16 @@
     <div id="right" style="height: 100%">
         <div id="browser" class="window" style="min-width: 125px; height: 100%;">
             <div class="title-bar">
-                <div class="title-bar-text">Internet Explorer</div>
+                <div class="title-bar-text">Outernet Explorer</div>
                 <div class="title-bar-controls"></div>
             </div>
             <div class="window-body" style="height: 100%;">
                 <div class="field-row">
-                    <button onclick="goUrl()">Refresh</button>
+                    <button onclick="goUrl()" style="min-width: 40px;">
+                        <i class="fa fa-refresh" aria-label="Refresh"></i>
+                    </button>
                     <input autocomplete="off" id="url" type="text" style="width: 100%;"
-                           onkeyup="if (event.key === 'Enter') goUrl();">
+                           onkeyup="if (event.key === 'Enter') goUrl();" value="about:blank">
                 </div>
                 <br>
                 <iframe id="browser-frame" src="about:blank"></iframe>
