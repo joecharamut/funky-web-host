@@ -374,7 +374,7 @@ ${fileList}
 </tbody>
 </table>
 <address>
-Someone's Browser at vgwp://${window.id}
+Someone's Browser at cool://${window.id}
 </address>
 </body>
 </html>`;
@@ -385,7 +385,7 @@ function setFrame(content) {
     let frame = $("#browser-frame");
     frame.src = URL.createObjectURL(blob);
     frame.onload = function() {
-        let urlRegex = /(^vgwp:\/\/.+$)|(^[^:]+$)/;
+        let urlRegex = /(^cool:\/\/.+$)|(^[^:]+$)/;
 
         // fix <a> tags
         let links = frame.contentDocument.getElementsByTagName("a");
@@ -482,7 +482,7 @@ function requestPage(url, requestFor = "") {
         return;
     }
 
-    let parts = /vgwp:\/\/([^\/]+)(\/(.*))?/.exec(url);
+    let parts = /cool:\/\/([^\/]+)(\/(.*))?/.exec(url);
     if (!parts || !parts[1]) {
         setFrame(`<!DOCTYPE html><html><body>
                   <h1>400 Bad Request</h1>
@@ -515,18 +515,18 @@ function requestPage(url, requestFor = "") {
 }
 
 function activatePeer(peerName) {
-    let urlBar = $("#url").value = `vgwp://${peerName}/`;
+    let urlBar = $("#url").value = `cool://${peerName}/`;
     goUrl();
 }
 
 function resolveUrl(relUrl) {
     let original = $("#url").value;
-    let urlRegex = /(^vgwp:\/\/.+$)|(^[^:]+$)/;
+    let urlRegex = /(^cool:\/\/.+$)|(^[^:]+$)/;
 
     if (relUrl[0] === "/") {
-        let parts = /vgwp:\/\/([^\/]+)(\/(.*))?/.exec(original);
+        let parts = /cool:\/\/([^\/]+)(\/(.*))?/.exec(original);
         console.log(parts);
-        return `vgwp://${parts[1]}${relUrl}`;
+        return `cool://${parts[1]}${relUrl}`;
     }
 
     let parts = urlRegex.exec(relUrl);
