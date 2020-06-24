@@ -454,6 +454,7 @@ function handleAboutPage(pageId) {
                         I mean its pretty much p2p web hosting<br><br>
                         kind of<br><br>
                         All your files are stored in javascript so if you refresh or close the tab its all gone<br>
+                        Also for uploaded html pages only &lt;a&gt; tags and &lt;img&gt; tags work with cool:// urls<br>
                         </p>
                         <h3>Technical Info:</h3>
                         <p>
