@@ -5,6 +5,7 @@ window.tunnel_after_connect = null;
 
 const $ = document.querySelector.bind(document);
 let fileStore = "";
+let timeStore = "";
 let requestCallbacks = {};
 let closeTimeout = null;
 
@@ -24,15 +25,18 @@ function uuidv4() {
     );
 }
 
-function getBase64(file, callback) {
+function getBase64(file) {
     let reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = function() {
-        callback(reader.result)
-    };
-    reader.onerror = function(error) {
-        console.log('Error: ', error);
-    };
+
+    return new Promise(function(resolve, reject) {
+        reader.onload = function() {
+            resolve(reader.result);
+        }
+        reader.onerror = function(error) {
+            reject(error);
+        }
+    });
 }
 
 function getHostname() {
@@ -43,22 +47,29 @@ function getHostname() {
     return host.value;
 }
 
-function storeFile() {
-    let f = $("#file").files[0];
-    getBase64(f, function(content) {
-        let bytes = (content.length * 6) / 8;
-        if (getFileSize() + bytes > 10 * 1000 * 1000) {
-            alert("storage limit is 10mb");
-            return;
-        }
+async function storeFile() {
+    let files = $("#file").files;
+    for (let i = 0; i < files.length; i++) {
+        let f = files[i];
+        console.log(f);
+        await getBase64(f).then(function(result) {
+            let bytes = (result.length * 6) / 8;
+            if (getFileSize() + bytes > 10 * 1000 * 1000) {
+                alert("storage limit is 10mb");
+                return;
+            }
 
-        let files = getFiles();
-        files[f.name] = content;
+            let files = getFiles();
+            let times = getTimes();
+            files[f.name] = result;
+            times[f.name] = f.lastModified;
 
-        setFiles(files);
-        console.log("stored file " + f.name);
-        refreshFiles();
-    });
+            setFiles(files);
+            setTimes(times);
+            console.log("stored file " + f.name);
+            refreshFiles();
+        });
+    }
 }
 
 function deleteFile() {
@@ -69,8 +80,11 @@ function deleteFile() {
         if (item.style.color === "white") {
             let name = item.innerHTML;
             let files = getFiles();
+            let times = getTimes();
             delete files[name];
+            delete times[name];
             setFiles(files);
+            setTimes(times);
             refreshFiles();
             return;
         }
@@ -350,6 +364,24 @@ function getFiles() {
     return files;
 }
 
+function setTimes(times) {
+    timeStore = JSON.stringify(times);
+}
+
+function getTime(path) {
+    return getTimes()[path];
+}
+
+function getTimes() {
+    let times = timeStore;
+    if (times) {
+        times = JSON.parse(times);
+    } else {
+        times = {};
+    }
+    return times;
+}
+
 function makeFileList() {
     let files = Object.keys(getFiles());
     let fileList = "";
@@ -357,20 +389,30 @@ function makeFileList() {
         let file = files[i];
         fileList += `<tr>
                      <td><a href="/${file}">${file}</a></td>
+                     <td style="text-align: right">${new Date(getTime(file)).toUTCString().slice(5, -4)}</td>
                      <td style="text-align: right">${Math.round(getFileSize(file) / 1000 * 10) / 10}K</td>
                      </tr>`;
     }
 
     return `<!DOCTYPE html>
 <html>
+<head>
+<style>
+
+td, th {
+    padding-right: 8px;
+}
+
+</style>
+</head>
 <body>
 <h1>Index of /</h1><br>
 <table style="font-family: monospace">
 <tbody>
-<tr><th>Name</th><th>Size</th></tr>
-<tr><th colspan="2"><hr></th></tr>
+<tr><th>Name</th><th>Last modified</th><th>Size</th></tr>
+<tr><th colspan="3"><hr></th></tr>
 ${fileList}
-<tr><th colspan="2"><hr></th></tr>
+<tr><th colspan="3"><hr></th></tr>
 </tbody>
 </table>
 <address>
