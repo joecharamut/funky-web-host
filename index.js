@@ -42,7 +42,7 @@ function getBase64(file) {
 function getHostname() {
     let host = $("#hostname");
     if (!host.value) {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        return Math.random().toString(36).substring(2, 15);
     }
     return host.value;
 }
@@ -425,7 +425,9 @@ Someone's Browser at cool://${window.id}
 function setFrame(content) {
     let blob = new Blob([content], {type: "text/html"});
     let frame = $("#browser-frame");
-    frame.src = URL.createObjectURL(blob);
+    let blobUrl = URL.createObjectURL(blob);
+    // frame.src = blobUrl;
+    frame.contentWindow.location.replace(blobUrl);
     frame.onload = function() {
         let urlRegex = /(^cool:\/\/.+$)|(^[^:]+$)/;
 
@@ -530,6 +532,10 @@ Although if you do go over it the server kills your connection<br><br>
 }
 
 function requestPage(url, requestFor = "") {
+    if (!requestFor) {
+        document.title = `Webhost (${url})`;
+    }
+
     if (url.startsWith("about:")) {
         handleAboutPage(url.split(":")[1]);
         return;
@@ -582,10 +588,7 @@ function resolveUrl(relUrl) {
         return `cool://${parts[1]}${relUrl}`;
     }
 
-    let parts = urlRegex.exec(relUrl);
-    if (parts[1]) {
-        return relUrl;
-    }
+    return relUrl;
 }
 
 function goRelativeUrl(relUrl) {
