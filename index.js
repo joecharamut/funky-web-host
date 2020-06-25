@@ -496,6 +496,7 @@ function handleAboutPage(pageId) {
 Set a hostname on the sidebar<br>
 Select some files if you want (you can do this later)<br>
 Click connect to connect to the network and browse/share files<br>
+Click on peer names to view the index of their files<br>
 </p>
 <h3>General Info:</h3>
 <p>
