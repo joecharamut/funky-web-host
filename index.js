@@ -481,41 +481,41 @@ function handleAboutPage(pageId) {
         switch (pageId) {
             case "blank": {
                 return `<!DOCTYPE html><html><body>
-                        <h1>Web Host Experiment Thing</h1>
-                        <h3>Requirements:</h3>
-                        <p>
-                        <ul>
-                            <li>Minimum screen resolution of 800x600</li>
-                            <li>Some modern browser</li>
-                            <li>Preferably not a mobile device</li>
-                        </ul>
-                        </p>
-                        <h3>How to use:</h3>
-                        <p>
-                        (very experimental so far)<br>
-                        Set a hostname on the sidebar<br>
-                        Select some files if you want (you can do this later)<br>
-                        Click connect to connect to the network and share your files<br>
-                        </p>
-                        <h3>General Info:</h3>
-                        <p>
-                        So basically you can host files from your browser as sort of a server<br>
-                        but it connects to a central server to pass the stuff from browser to browser<br>
-                        I mean its pretty much p2p web hosting<br><br>
-                        kind of<br><br>
-                        All your files are stored in javascript so if you refresh or close the tab its all gone<br>
-                        Also for uploaded html pages only &lt;a&gt; tags and &lt;img&gt; tags work with cool:// urls<br>
-                        Oh and the back and forward buttons dont work for the url bar yet<br>
-                        </p>
-                        <h3>Technical Info:</h3>
-                        <p>
-                        It's almost all in the browser with normal javascript<br>
-                        Other than the server, which is written in python<br>
-                        The 10MB limit is just for fun<br>
-                        Although if you do go over it the server kills your connection<br><br>
-                        <a href="https://github.com/joecharamut/funky-web-host">sauce code</a>
-                        </p>
-                        </body></html>`;
+<h1>Web Host Experiment Thing</h1>
+<h3>Requirements:</h3>
+<p>
+<ul>
+    <li>Minimum screen resolution of 800x600</li>
+    <li>Some modern browser</li>
+    <li>Preferably not a mobile device</li>
+</ul>
+</p>
+<h3>How to use:</h3>
+<p>
+(very experimental so far)<br>
+Set a hostname on the sidebar<br>
+Select some files if you want (you can do this later)<br>
+Click connect to connect to the network and browse/share files<br>
+</p>
+<h3>General Info:</h3>
+<p>
+So basically you can host files from your browser as sort of a server<br>
+but it connects to a central server to pass the stuff from browser to browser<br>
+I mean its pretty much p2p web hosting<br><br>
+kind of<br><br>
+All your files are stored in javascript so if you refresh or close the tab its all gone<br>
+Also for uploaded html pages only &lt;a&gt; tags and &lt;img&gt; tags work with cool:// urls<br>
+Oh and the back and forward buttons dont work for the url bar yet<br>
+</p>
+<h3>Technical Info:</h3>
+<p>
+It's almost all in the browser with normal javascript<br>
+Other than the server, which is written in python<br>
+The 10MB limit is just for fun<br>
+Although if you do go over it the server kills your connection<br><br>
+<a href="https://github.com/joecharamut/funky-web-host">sauce code</a>
+</p>
+</body></html>`;
             } break;
 
             default: {
