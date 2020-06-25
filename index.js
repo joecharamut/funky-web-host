@@ -331,7 +331,7 @@ function onMessage(event) {
                                 "id": tunnelId
                             }));
                         }
-                    })(message.id), 1000);
+                    })(message.id), 500);
                 } break;
             }
         } break;
@@ -574,7 +574,7 @@ function requestPage(url, requestFor = "") {
 }
 
 function activatePeer(peerName) {
-    let urlBar = $("#url").value = `cool://${peerName}/`;
+    $("#url").value = `cool://${peerName}/`;
     goUrl();
 }
 
