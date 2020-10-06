@@ -516,7 +516,6 @@ It's almost all in the browser with normal javascript<br>
 Other than the server, which is written in python<br>
 The 10MB limit is just for fun<br>
 Although if you do go over it the server kills your connection<br><br>
-<a href="https://github.com/joecharamut/funky-web-host">sauce code</a>
 </p>
 </body></html>`;
             } break;
